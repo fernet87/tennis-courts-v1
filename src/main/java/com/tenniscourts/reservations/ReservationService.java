@@ -1,23 +1,39 @@
 package com.tenniscourts.reservations;
 
 import com.tenniscourts.exceptions.EntityNotFoundException;
+import com.tenniscourts.guests.GuestDTO;
+import com.tenniscourts.guests.GuestService;
+import com.tenniscourts.schedules.ScheduleDTO;
+import com.tenniscourts.schedules.ScheduleService;
+
 import lombok.AllArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
-
+    
     private final ReservationMapper reservationMapper;
+    
+    private final GuestService guestService;
+
+    private final ScheduleService scheduleService;
 
     public ReservationDTO bookReservation(CreateReservationRequestDTO createReservationRequestDTO) {
-        throw new UnsupportedOperationException();
+        ReservationDTO reservationDTO = new ReservationDTO();      
+        reservationDTO.setGuest(guestService.findById(createReservationRequestDTO.getGuestId()));
+        reservationDTO.setSchedule(scheduleService.findSchedule(createReservationRequestDTO.getScheduleId()));
+        reservationDTO.setValue(BigDecimal.valueOf(0));
+        return reservationMapper.map(reservationRepository.save(reservationMapper.map(reservationDTO)));
     }
 
     public ReservationDTO findReservation(Long reservationId) {
@@ -71,14 +87,14 @@ public class ReservationService {
         return BigDecimal.ZERO;
     }
 
-    /*TODO: This method actually not fully working, find a way to fix the issue when it's throwing the error:
-            "Cannot reschedule to the same slot.*/
     public ReservationDTO rescheduleReservation(Long previousReservationId, Long scheduleId) {
-        Reservation previousReservation = cancel(previousReservationId);
-
-        if (scheduleId.equals(previousReservation.getSchedule().getId())) {
+        ReservationDTO previousReservationDTO = findReservation(previousReservationId);
+        
+        if (scheduleId.equals(previousReservationDTO.getSchedule().getId())) {
             throw new IllegalArgumentException("Cannot reschedule to the same slot.");
         }
+
+        Reservation previousReservation = cancel(previousReservationId);
 
         previousReservation.setReservationStatus(ReservationStatus.RESCHEDULED);
         reservationRepository.save(previousReservation);
@@ -89,5 +105,11 @@ public class ReservationService {
                 .build());
         newReservation.setPreviousReservation(reservationMapper.map(previousReservation));
         return newReservation;
+    }
+    
+    public ReservationDTO chargeDeposit(Long reservationId, BigDecimal deposit) {
+        ReservationDTO reservationDTO = findReservation(reservationId);
+        reservationDTO.setValue(deposit);
+        return reservationMapper.map(reservationRepository.save(reservationMapper.map(reservationDTO)));
     }
 }
