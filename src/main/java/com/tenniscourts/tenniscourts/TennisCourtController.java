@@ -10,25 +10,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/tennisCourt")
+@Api(description = "Set of endpoints for Creating and Retrieving of Tennis Courts.")
 public class TennisCourtController extends BaseRestController {
 
     private final TennisCourtService tennisCourtService;
 
     @PostMapping("/add")
+    @ApiOperation("Creates a new tennis court.")
     public ResponseEntity<Void> addTennisCourt(@RequestBody TennisCourtDTO tennisCourtDTO) {
         return ResponseEntity.created(locationByEntity(tennisCourtService.addTennisCourt(tennisCourtDTO).getId())).build();
     }
 
-    @GetMapping("/{tennisCourtId}")
-    public ResponseEntity<TennisCourtDTO> findTennisCourtById(@PathVariable("tennisCourtId") Long tennisCourtId) {
-        return ResponseEntity.ok(tennisCourtService.findTennisCourtById(tennisCourtId));
+    @GetMapping("/{id}")
+    @ApiOperation("Returns a specific tennis court by their identifier. 404 if does not exist.")
+    public ResponseEntity<TennisCourtDTO> findTennisCourtById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(tennisCourtService.findTennisCourtById(id));
     }
 
-    @GetMapping("/withSchedules/{tennisCourtId}")
-    public ResponseEntity<TennisCourtDTO> findTennisCourtWithSchedulesById(@PathVariable("tennisCourtId") Long tennisCourtId) {
-        return ResponseEntity.ok(tennisCourtService.findTennisCourtWithSchedulesById(tennisCourtId));
+    @GetMapping("/withSchedules/{id}")
+    @ApiOperation("Returns a specific tennis court with their schedule list by their identifier. 404 if does not exist.")
+    public ResponseEntity<TennisCourtDTO> findTennisCourtWithSchedulesById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(tennisCourtService.findTennisCourtWithSchedulesById(id));
     }
 }

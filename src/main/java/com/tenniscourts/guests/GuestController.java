@@ -16,42 +16,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/guest")
+@Api(description = "Set of endpoints for Creating, Retrieving, Updating and Deleting of Guests.")
 public class GuestController extends BaseRestController {
 
   private final GuestService guestService;
 
   @GetMapping("/all")
+  @ApiOperation("Returns list of all guests in the system.")
   public ResponseEntity<List<GuestDTO>> findAll() {
     return ResponseEntity.ok(guestService.findAll());
   }
 
   @GetMapping("/{id}")
+  @ApiOperation("Returns a specific guest by their identifier. 404 if does not exist.")
   public ResponseEntity<GuestDTO> findById(@PathVariable("id") Long id) {
     return ResponseEntity.ok(guestService.findById(id));
   }
 
   @GetMapping()
+  @ApiOperation("Returns a list of guests searched by name. It searches with a part of the name or with the full name and ignore case.")
   public ResponseEntity<List<GuestDTO>> findByName(@RequestParam("name") String name) {
     return ResponseEntity.ok(guestService.findByName(name));
   }
 
   @PostMapping("/add")
+  @ApiOperation("Creates a new guest.")
   public ResponseEntity<Void> addGuest(@RequestBody GuestDTO guestDTO) {
       return ResponseEntity.created(locationByEntity(guestService.addGuest(guestDTO).getId())).build();
   }
   
   @PutMapping("/update")
+  @ApiOperation("Updates an existing guest. 404 if does not exist.")
   public ResponseEntity<Void> updateGuest(@RequestBody GuestDTO guestDTO) {
       return ResponseEntity.created(locationByEntity(guestService.updateGuest(guestDTO).getId())).build();
   }
   
 
   @DeleteMapping("/{id}")
+  @ApiOperation("Deletes a guest from the system. 404 if the guest's identifier is not found.")
   public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
     return (guestService.delete(id)) ? ResponseEntity.ok().build() : ResponseEntity.status(HttpStatus.CONFLICT).build();
   }
