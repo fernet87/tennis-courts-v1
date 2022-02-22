@@ -41,7 +41,7 @@ public class GuestController extends BaseRestController {
   }
 
   @GetMapping()
-  @ApiOperation("Returns a list of guests searched by name. It searches with a part of the name or with the full name and ignore case.")
+  @ApiOperation("Returns a list of guests search by name, entering the full name or part of the name ignoring the case.")
   public ResponseEntity<List<GuestDTO>> findByName(@RequestParam("name") String name) {
     return ResponseEntity.ok(guestService.findByName(name));
   }

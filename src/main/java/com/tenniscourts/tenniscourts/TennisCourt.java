@@ -2,6 +2,7 @@ package com.tenniscourts.tenniscourts;
 
 import com.tenniscourts.config.persistence.BaseEntity;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @EqualsAndHashCode(callSuper = true)
 @ToString
 public class TennisCourt extends BaseEntity<Long> {

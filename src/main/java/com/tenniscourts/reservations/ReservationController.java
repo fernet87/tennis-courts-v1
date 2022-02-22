@@ -1,6 +1,7 @@
 package com.tenniscourts.reservations;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import com.tenniscourts.config.BaseRestController;
 import lombok.AllArgsConstructor;
@@ -53,5 +54,17 @@ public class ReservationController extends BaseRestController {
     @ApiOperation("Charge a deposit to a specific reservation by their identifier. 404 if does not exist. It accepts as optional parameter the deposit value. $10 is the default if this value is not sent.")
     public ResponseEntity<ReservationDTO> chargeReservationDeposit(@PathVariable("id") Long id, @RequestParam(name = "deposit", required = false, defaultValue = "10") BigDecimal deposit) {
         return ResponseEntity.ok(reservationService.chargeDeposit(id, deposit));
+    }
+    
+    // @PutMapping("/keepDeposit/{id}")
+    // @ApiOperation("Keep a deposit from a specific reservation by their identifier. 404 if does not exist.")
+    // public ResponseEntity<ReservationDTO> keepReservationDeposit(@PathVariable("id") Long id, @RequestParam(name = "deposit", required = false, defaultValue = "10") BigDecimal deposit) {
+    //     return ResponseEntity.ok(reservationService.keepDeposit(id));
+    // }
+    
+    @GetMapping("/history")
+    @ApiOperation("Returns a list of past reservations.")
+    public ResponseEntity<List<ReservationDTO>> history() {
+        return ResponseEntity.ok(reservationService.getPastReservations());
     }
 }

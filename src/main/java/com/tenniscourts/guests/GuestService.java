@@ -1,8 +1,6 @@
 package com.tenniscourts.guests;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.tenniscourts.exceptions.BusinessException;
@@ -16,9 +14,9 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class GuestService {
   
-  private final GuestRepository guestRepository;
+  private GuestRepository guestRepository;
     
-  private final GuestMapper guestMapper;
+  private GuestMapper guestMapper;
 
   public List<GuestDTO> findAll() {
     return guestRepository.findAll().stream().map(guest -> { return guestMapper.map(guest); }).collect(Collectors.toList());

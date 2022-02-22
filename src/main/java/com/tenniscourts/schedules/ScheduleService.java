@@ -1,9 +1,5 @@
 package com.tenniscourts.schedules;
 
-import lombok.AllArgsConstructor;
-
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,26 +8,31 @@ import com.tenniscourts.exceptions.EntityNotFoundException;
 import com.tenniscourts.tenniscourts.TennisCourtMapper;
 import com.tenniscourts.tenniscourts.TennisCourtRepository;
 
+import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
+
 @Service
 @AllArgsConstructor
 public class ScheduleService {
 
-    private final ScheduleRepository scheduleRepository;
+    private ScheduleRepository scheduleRepository;
 
-    private final ScheduleMapper scheduleMapper;
+    private ScheduleMapper scheduleMapper;
 
-    private final TennisCourtRepository tennisCourtRepository;
+    private TennisCourtRepository tennisCourtRepository;
 
-    private final TennisCourtMapper tennisCourtMapper;
+    private TennisCourtMapper tennisCourtMapper;
 
     public ScheduleDTO addSchedule(Long tennisCourtId, CreateScheduleRequestDTO createScheduleRequestDTO) {
-        ScheduleDTO newSchedule = new ScheduleDTO();
-        newSchedule.setTennisCourtId(tennisCourtId);
-        newSchedule.setStartDateTime(createScheduleRequestDTO.getStartDateTime());
-        newSchedule.setEndDateTime(createScheduleRequestDTO.getStartDateTime().plusHours(1L));
-        newSchedule.setTennisCourt(tennisCourtRepository.findById(tennisCourtId).map(tennisCourtMapper::map).orElseThrow(() -> {
-            throw new EntityNotFoundException("Tennis Court not found.");
-        }));
+        ScheduleDTO newSchedule = ScheduleDTO.builder()
+            .tennisCourtId(tennisCourtId)
+            .startDateTime(createScheduleRequestDTO.getStartDateTime())
+            .endDateTime(createScheduleRequestDTO.getStartDateTime().plusHours(1L))
+            .tennisCourt(tennisCourtRepository.findById(tennisCourtId).map(tennisCourtMapper::map).orElseThrow(() -> {
+                throw new EntityNotFoundException("Tennis Court not found.");
+            }))
+            .build();
         
         return scheduleMapper.map(scheduleRepository.saveAndFlush(scheduleMapper.map(newSchedule)));
     }
@@ -42,7 +43,7 @@ public class ScheduleService {
 
     public ScheduleDTO findSchedule(Long scheduleId) {
         return scheduleRepository.findById(scheduleId).map(scheduleMapper::map).orElseThrow(() -> {
-            throw new EntityNotFoundException("Schedule not found.");
+            throw new EntityNotFoundException("Schedule " + scheduleId + " not found.");
         });
     }
 

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ public class TennisCourtDTO {
     private String name;
 
     @ApiModelProperty(notes = "List of schedules of the tennis court.", required = false, position = 2)
+    @Singular
     private List<ScheduleDTO> tennisCourtSchedules;
 
 }

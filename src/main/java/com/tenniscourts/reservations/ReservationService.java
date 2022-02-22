@@ -1,32 +1,30 @@
 package com.tenniscourts.reservations;
 
-import com.tenniscourts.exceptions.EntityNotFoundException;
-import com.tenniscourts.guests.GuestDTO;
-import com.tenniscourts.guests.GuestService;
-import com.tenniscourts.schedules.ScheduleDTO;
-import com.tenniscourts.schedules.ScheduleService;
-
-import lombok.AllArgsConstructor;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.tenniscourts.exceptions.EntityNotFoundException;
+import com.tenniscourts.guests.GuestService;
+import com.tenniscourts.schedules.ScheduleService;
+
+import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class ReservationService {
 
-    private final ReservationRepository reservationRepository;
+    private ReservationRepository reservationRepository;
     
-    private final ReservationMapper reservationMapper;
+    private ReservationMapperImpl reservationMapper;
     
-    private final GuestService guestService;
+    private GuestService guestService;
 
-    private final ScheduleService scheduleService;
+    private ScheduleService scheduleService;
 
     public ReservationDTO bookReservation(CreateReservationRequestDTO createReservationRequestDTO) {
         ReservationDTO reservationDTO = new ReservationDTO();      
@@ -38,7 +36,7 @@ public class ReservationService {
 
     public ReservationDTO findReservation(Long reservationId) {
         return reservationRepository.findById(reservationId).map(reservationMapper::map).orElseThrow(() -> {
-            throw new EntityNotFoundException("Reservation not found.");
+            throw new EntityNotFoundException("Reservation " + reservationId + " not found.");
         });
     }
 
@@ -59,7 +57,7 @@ public class ReservationService {
         });
     }
 
-    private Reservation updateReservation(Reservation reservation, BigDecimal refundValue, ReservationStatus status) {
+    private Reservation updateReservation(Reservation reservation, BigDecimal refundValue,ReservationStatus status) {
         reservation.setReservationStatus(status);
         reservation.setValue(reservation.getValue().subtract(refundValue));
         reservation.setRefundValue(refundValue);
@@ -80,7 +78,20 @@ public class ReservationService {
     public BigDecimal getRefundValue(Reservation reservation) {
         long hours = ChronoUnit.HOURS.between(LocalDateTime.now(), reservation.getSchedule().getStartDateTime());
 
-        if (hours >= 24) {
+        if (hours < 2) {
+            // keep 75% and refund 25%
+            return BigDecimal.valueOf(reservation.getValue().doubleValue() * BigDecimal.valueOf(0.25).doubleValue());
+        }
+        else if (hours >= 2 && hours < 12) {
+            // keep 50% and refund 50%
+            return BigDecimal.valueOf(reservation.getValue().doubleValue() * BigDecimal.valueOf(0.50).doubleValue());
+        }
+        else if (hours >= 12 && hours < 24) {
+            // keep 25% and refund 75%
+            return BigDecimal.valueOf(reservation.getValue().doubleValue() * BigDecimal.valueOf(0.75).doubleValue());
+        }
+        else if (hours >= 24) {
+            // refund 100%
             return reservation.getValue();
         }
 
@@ -111,5 +122,15 @@ public class ReservationService {
         ReservationDTO reservationDTO = findReservation(reservationId);
         reservationDTO.setValue(deposit);
         return reservationMapper.map(reservationRepository.save(reservationMapper.map(reservationDTO)));
+    }
+
+    // public ReservationDTO keepDeposit(Long reservationId) {
+    //     ReservationDTO reservationDTO = findReservation(reservationId);
+    //     return reservationMapper.map(reservationRepository.save(reservationMapper.map(reservationDTO)));
+    // }
+
+    public List<ReservationDTO> getPastReservations() {
+        List<Reservation> historicReservations = reservationRepository.findBySchedule_StartDateTimeLessThanEqual(LocalDateTime.now());
+        return historicReservations.stream().map(historicReservation -> reservationMapper.map(historicReservation)).collect(Collectors.toList());
     }
 }
